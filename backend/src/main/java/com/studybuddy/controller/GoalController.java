@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.server.ResponseStatusException;
+
 @RestController
 @RequestMapping("/api/v1/goals")
 @RequiredArgsConstructor
@@ -24,7 +26,14 @@ public class GoalController {
     private final GoalService goalService;
 
     private Long userId(OAuth2User principal) {
-        return principal.getAttribute("dbUserId");
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+        Object id = principal.getAttribute("dbUserId");
+        if (id instanceof Number number) {
+            return number.longValue();
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User ID not found in session");
     }
 
     @PostMapping

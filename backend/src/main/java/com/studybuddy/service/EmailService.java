@@ -1,19 +1,22 @@
-
 package com.studybuddy.service;
 
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-// @Service  <-- TEMPORARILY DISABLED so the app can start without email setup
-@RequiredArgsConstructor
+@Service
 public class EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
 
-    // @Async makes this run in the background so login isn't delayed by email sending
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     @Async
     public void sendWelcomeEmail(String toEmail, String userName) {
         try {
@@ -31,9 +34,9 @@ public class EmailService {
                     "The StudyBuddy Team");
 
             mailSender.send(message);
+            log.info("Welcome email sent successfully to {}", toEmail);
         } catch (Exception e) {
-            // We log the error but don't throw it so login doesn't fail if email fails
-            System.err.println("Failed to send welcome email: " + e.getMessage());
+            log.warn("Failed to send welcome email to {}: {}", toEmail, e.getMessage());
         }
     }
 }

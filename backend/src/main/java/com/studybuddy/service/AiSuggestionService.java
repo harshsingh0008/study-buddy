@@ -24,7 +24,7 @@ public class AiSuggestionService {
                     .bodyValue(Map.of("studied", studied, "subject", subject == null ? "" : subject))
                     .retrieve()
                     .bodyToMono(AiResponse.class)
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(10))
                     .block();
 
             if (resp == null || resp.suggestions() == null || resp.suggestions().isEmpty()) {
