@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Buddy - Dream Big, Study Smart!</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- =======================================================
+       LOGIN SCREEN (SHOWN FIRST ON SITE LOAD)
+       ======================================================= -->
+  <div class="login-view-wrapper" id="login-view">
+    <div class="login-card">
+      <!-- Owl Mascot with Graduation Cap -->
+      <div class="login-mascot-box">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+          <!-- Cap -->
+          <path d="M50 12L88 28L50 44L12 28L50 12Z" fill="#252A56"/>
+          <path d="M50 10L92 27L50 45L8 27L50 10Z" stroke="#4F46E5" stroke-width="2"/>
+          <path d="M30 35V52C30 52 40 58 50 58C60 58 70 52 70 52V35" fill="#1E234A"/>
+          <!-- Tassel -->
+          <path d="M80 32C83 38 84 45 84 50" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="84" cy="52" r="4" fill="#F59E0B"/>
+          <!-- Body -->
+          <ellipse cx="50" cy="65" rx="36" ry="32" fill="#7C88DE"/>
+          <ellipse cx="50" cy="70" rx="26" ry="22" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <circle cx="36" cy="58" r="14" fill="#FFFFFF"/>
+          <circle cx="64" cy="58" r="14" fill="#FFFFFF"/>
+          <circle cx="36" cy="58" r="7" fill="#1E234D"/>
+          <circle cx="64" cy="58" r="7" fill="#1E234D"/>
+          <circle cx="38" cy="56" r="3" fill="#FFFFFF"/>
+          <circle cx="66" cy="56" r="3" fill="#FFFFFF"/>
+          <circle cx="36" cy="58" r="13" stroke="#3B82F6" stroke-width="2.5" fill="none"/>
+          <circle cx="64" cy="58" r="13" stroke="#3B82F6" stroke-width="2.5" fill="none"/>
+          <!-- Beak -->
+          <polygon points="50,65 44,72 56,72" fill="#F59E0B"/>
+          <ellipse cx="40" cy="95" rx="6" ry="3" fill="#F59E0B"/>
+          <ellipse cx="60" cy="95" rx="6" ry="3" fill="#F59E0B"/>
+        </svg>
+      </div>
+
+      <h1 class="login-title">Study<span>Buddy</span></h1>
+      <p class="login-tagline">Log in to track your study sessions, set custom goals, and unlock AI-powered topic suggestions.</p>
+
+      <!-- Google OAuth2 Login Button -->
+      <a href="/oauth2/authorization/google" class="google-login-action-btn" id="btn-google-login">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </a>
+
+      <div class="login-divider">
+        <span>or enter as guest</span>
+      </div>
+
+      <!-- Quick Name Input for Immediate User Entry -->
+      <div class="guest-login-form">
+        <input type="text" id="guest-name-input" class="login-input" placeholder="Enter your name (e.g. Harsh)" autocomplete="name">
+        <button class="btn-guest-submit" id="btn-guest-login">Start Studying 🚀</button>
+      </div>
+
+      <div class="login-footer-quote">
+        <span>Dream Big, Study Smart!</span>
+        <span>💙</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       MAIN STUDY BUDDY APPLICATION (AUTHENTICATED)
+       ======================================================= -->
+  <div class="app-container hidden" id="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <a href="#" class="brand">
+        <!-- Cute Owl Mascot SVG -->
+        <svg class="brand-mascot" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 12L88 28L50 44L12 28L50 12Z" fill="#252A56"/>
+          <path d="M50 10L92 27L50 45L8 27L50 10Z" stroke="#4F46E5" stroke-width="2"/>
+          <path d="M30 35V52C30 52 40 58 50 58C60 58 70 52 70 52V35" fill="#1E234A"/>
+          <path d="M80 32C83 38 84 45 84 50" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="84" cy="52" r="4" fill="#F59E0B"/>
+          <ellipse cx="50" cy="65" rx="36" ry="32" fill="#7C88DE"/>
+          <ellipse cx="50" cy="70" rx="26" ry="22" fill="#FFFFFF"/>
+          <circle cx="36" cy="58" r="14" fill="#FFFFFF"/>
+          <circle cx="64" cy="58" r="14" fill="#FFFFFF"/>
+          <circle cx="36" cy="58" r="7" fill="#1E234D"/>
+          <circle cx="64" cy="58" r="7" fill="#1E234D"/>
+          <circle cx="38" cy="56" r="3" fill="#FFFFFF"/>
+          <circle cx="66" cy="56" r="3" fill="#FFFFFF"/>
+          <circle cx="36" cy="58" r="13" stroke="#3B82F6" stroke-width="2.5" fill="none"/>
+          <circle cx="64" cy="58" r="13" stroke="#3B82F6" stroke-width="2.5" fill="none"/>
+          <polygon points="50,65 44,72 56,72" fill="#F59E0B"/>
+          <ellipse cx="40" cy="95" rx="6" ry="3" fill="#F59E0B"/>
+          <ellipse cx="60" cy="95" rx="6" ry="3" fill="#F59E0B"/>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">Study<br><span>Buddy</span></span>
+        </div>
+      </a>
+
+      <!-- NAVIGATION MENU -->
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="home">
+          <button class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="study">
+          <button class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+            <span>My Study</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="goals">
+          <button class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            <span>Goals</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="assistant">
+          <button class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L17 19l2.5-1.4L22 19l-1.4-2.5L22 14zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-7.63 5.29c-.39-.39-1.02-.39-1.41 0L1.29 18.96c-.39.39-.39 1.02 0 1.41l2.34 2.34c.39.39 1.02.39 1.41 0L16.7 11.05c.39-.39.39-1.02 0-1.41l-2.33-2.35zm-1.03 5.49l-1.06-1.06 7.07-7.07 1.06 1.06-7.07 7.07z"/></svg>
+            <span>AI Assistant</span>
+          </button>
+        </li>
+        <li class="nav-item" data-view="profile">
+          <button class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Profile</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" id="btn-logout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-wrapper">
+      <div class="content-body">
+
+        <!-- ==================== VIEW 1: HOME (DASHBOARD) ==================== -->
+        <section class="view-section active" id="view-home">
+          <!-- WELCOME BANNER -->
+          <div class="welcome-banner">
+            <div class="banner-left">
+              <div class="greeting-text">
+                <h1>Hello, <span id="user-greeting-name">Student</span>! <span class="wave-emoji">👋</span></h1>
+                <p>Keep learning, you're doing great!</p>
+              </div>
+            </div>
+
+            <div class="banner-right">
+              <!-- Reading Boy Vector Illustration -->
+              <svg class="banner-illustration" viewBox="0 0 220 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 45L40 35" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+                <path d="M65 30L65 18" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+                <path d="M80 40L92 30" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>
+                <ellipse cx="140" cy="55" rx="28" ry="30" fill="#FBD3B0"/>
+                <path d="M112 55C112 36 122 22 142 22C162 22 170 36 170 50C164 48 158 54 150 46C140 56 128 46 122 56C116 54 114 58 112 55Z" fill="#58311B"/>
+                <circle cx="132" cy="56" r="3.5" fill="#2E1B10"/>
+                <circle cx="152" cy="56" r="3.5" fill="#2E1B10"/>
+                <ellipse cx="127" cy="62" rx="4" ry="2.5" fill="#F87171" opacity="0.6"/>
+                <ellipse cx="157" cy="62" rx="4" ry="2.5" fill="#F87171" opacity="0.6"/>
+                <path d="M138 64C140 67 144 67 146 64" stroke="#78350F" stroke-width="2" stroke-linecap="round"/>
+                <path d="M118 84C118 78 126 76 142 76C158 76 166 78 166 84L172 120H112L118 84Z" fill="#3B82F6"/>
+                <path d="M136 76L142 86L148 76" fill="#EF4444"/>
+                <path d="M96 112C118 100 138 106 142 110C146 106 166 100 188 112L182 135C162 124 146 128 142 132C138 128 122 124 102 135L96 112Z" fill="#2563EB"/>
+                <path d="M102 114C122 104 138 109 142 112C146 109 162 104 182 114L178 132C160 123 146 126 142 129C138 126 124 123 106 132L102 114Z" fill="#FFFFFF"/>
+                <line x1="142" y1="112" x2="142" y2="129" stroke="#93C5FD" stroke-width="2"/>
+                <ellipse cx="140" cy="148" rx="70" ry="22" fill="#86EFAC"/>
+              </svg>
+
+              <!-- Profile Badge -->
+              <div class="user-profile-badge" title="User Account">
+                <img id="user-avatar-img" class="user-avatar-img" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile">
+              </div>
+            </div>
+          </div>
+
+          <!-- TOP 3 GOAL CARDS -->
+          <div class="goal-summary-grid">
+            <!-- Daily Goal Card -->
+            <div class="goal-card">
+              <div class="goal-card-header">
+                <div class="goal-icon-box daily">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                </div>
+                <div class="goal-card-meta">
+                  <span class="goal-type-label">Daily Goal</span>
+                  <span class="goal-topics-count" id="daily-goal-text">0 / 0 Topics</span>
+                </div>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill daily" id="daily-progress-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Weekly Goal Card -->
+            <div class="goal-card">
+              <div class="goal-card-header">
+                <div class="goal-icon-box weekly">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
+                </div>
+                <div class="goal-card-meta">
+                  <span class="goal-type-label">Weekly Goal</span>
+                  <span class="goal-topics-count" id="weekly-goal-text">0 / 0 Topics</span>
+                </div>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill weekly" id="weekly-progress-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Monthly Goal Card -->
+            <div class="goal-card">
+              <div class="goal-card-header">
+                <div class="goal-icon-box monthly">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </div>
+                <div class="goal-card-meta">
+                  <span class="goal-type-label">Monthly Goal</span>
+                  <span class="goal-topics-count" id="monthly-goal-text">0 / 0 Topics</span>
+                </div>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill monthly" id="monthly-progress-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MIDDLE ROW: CHART & TODAY'S STUDY -->
+          <div class="split-grid">
+            <!-- Study Progress Chart -->
+            <div class="card">
+              <div class="card-title-row">
+                <div class="card-title">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#5450D6"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                  <span>Your Study Progress</span>
+                </div>
+                <select class="dropdown-pill" id="chart-period-select">
+                  <option value="week">This Week</option>
+                  <option value="last-week">Last Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+
+              <!-- Bar Chart Container -->
+              <div class="chart-container" id="study-progress-chart"></div>
+            </div>
+
+            <!-- Today's Study Card -->
+            <div class="card today-study-card">
+              <div>
+                <div class="card-title-row">
+                  <div class="card-title">
+                    <span style="color: #10B981;">✔</span>
+                    <span>Today's Study</span>
+                    <span>✏️</span>
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label" for="input-today-study">What did you study today?</label>
+                  <input type="text" id="input-today-study" class="styled-input" placeholder="e.g. Fractions" autocomplete="off">
+                </div>
+              </div>
+
+              <button class="btn-primary" id="btn-add-study">Add Study</button>
+            </div>
+          </div>
+
+          <!-- BOTTOM ROW: AI ASSISTANT & QUICK STATS -->
+          <div class="split-grid">
+            <!-- AI Study Assistant Card -->
+            <div class="card ai-assistant-card">
+              <div class="ai-card-content">
+                <div class="card-title">
+                  <span>AI Study Assistant</span>
+                  <span>✨</span>
+                </div>
+                <p>Get personalized topic suggestions based on what you've studied!</p>
+                <button class="btn-secondary-action" id="btn-get-suggestions-home">
+                  <span>Get Suggestions</span>
+                  <span>➔</span>
+                </button>
+              </div>
+
+              <!-- Friendly Robot Mascot SVG -->
+              <svg class="ai-mascot-img" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="60" y1="12" x2="60" y2="28" stroke="#3B82F6" stroke-width="3"/>
+                <circle cx="60" cy="10" r="5" fill="#FBBF24"/>
+                <rect x="30" y="26" width="60" height="46" rx="16" fill="#E2E8F0" stroke="#3B82F6" stroke-width="3"/>
+                <rect x="38" y="34" width="44" height="24" rx="8" fill="#1E234D"/>
+                <circle cx="48" cy="46" r="4.5" fill="#38BDF8"/>
+                <circle cx="72" cy="46" r="4.5" fill="#38BDF8"/>
+                <path d="M54 52C58 55 62 55 66 52" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+                <rect x="36" y="74" width="48" height="40" rx="12" fill="#E2E8F0" stroke="#3B82F6" stroke-width="3"/>
+                <circle cx="60" cy="92" r="6" fill="#F43F5E"/>
+                <path d="M68 90H88V114H68Z" fill="#14B8A6" rx="3"/>
+                <path d="M72 90H88V114H72Z" fill="#F8FAFC" rx="2"/>
+                <path d="M28 84C22 88 20 98 28 104" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="card">
+              <div class="card-title-row">
+                <div class="card-title">
+                  <span>🏆</span>
+                  <span>Quick Stats</span>
+                </div>
+              </div>
+
+              <div class="stats-badges-row">
+                <div class="stat-badge-item">
+                  <div class="stat-circle-icon topics">📘</div>
+                  <span class="stat-badge-val" id="stat-total-topics">0</span>
+                  <span class="stat-badge-lbl">Total Topics</span>
+                </div>
+
+                <div class="stat-badge-item">
+                  <div class="stat-circle-icon streak">🔥</div>
+                  <span class="stat-badge-val" id="stat-streak">0 Days</span>
+                  <span class="stat-badge-lbl">Streak</span>
+                </div>
+
+                <div class="stat-badge-item">
+                  <div class="stat-circle-icon rate">⭐</div>
+                  <span class="stat-badge-val" id="stat-rate">0%</span>
+                  <span class="stat-badge-lbl">Goal Rate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 2: SET YOUR GOALS ==================== -->
+        <section class="view-section" id="view-goals">
+          <div class="view-header">
+            <h2><span>🎯</span> Set Your Goals</h2>
+            <p>Aim higher and achieve more!</p>
+          </div>
+
+          <div class="card goals-form-card">
+            <!-- Daily Goal Stepper -->
+            <div class="goal-setting-row">
+              <div class="goal-setting-info">
+                <div class="goal-icon-box daily">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                </div>
+                <div class="goal-setting-texts">
+                  <h3>Daily Goal</h3>
+                  <p>How many topics do you want to study each day?</p>
+                </div>
+              </div>
+
+              <div class="stepper-control">
+                <button class="stepper-btn btn-minus">−</button>
+                <span class="stepper-value" id="stepper-daily">0</span>
+                <button class="stepper-btn btn-plus">+</button>
+                <span class="stepper-unit">topics</span>
+              </div>
+            </div>
+
+            <!-- Weekly Goal Stepper -->
+            <div class="goal-setting-row">
+              <div class="goal-setting-info">
+                <div class="goal-icon-box weekly">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                </div>
+                <div class="goal-setting-texts">
+                  <h3>Weekly Goal</h3>
+                  <p>How many topics do you want to complete this week?</p>
+                </div>
+              </div>
+
+              <div class="stepper-control">
+                <button class="stepper-btn btn-minus">−</button>
+                <span class="stepper-value" id="stepper-weekly">0</span>
+                <button class="stepper-btn btn-plus">+</button>
+                <span class="stepper-unit">topics</span>
+              </div>
+            </div>
+
+            <!-- Monthly Goal Stepper -->
+            <div class="goal-setting-row">
+              <div class="goal-setting-info">
+                <div class="goal-icon-box monthly">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </div>
+                <div class="goal-setting-texts">
+                  <h3>Monthly Goal</h3>
+                  <p>How many topics do you want to complete this month?</p>
+                </div>
+              </div>
+
+              <div class="stepper-control">
+                <button class="stepper-btn btn-minus">−</button>
+                <span class="stepper-value" id="stepper-monthly">0</span>
+                <button class="stepper-btn btn-plus">+</button>
+                <span class="stepper-unit">topics</span>
+              </div>
+            </div>
+
+            <button class="btn-primary btn-center-submit" id="btn-save-goals">Save Goals</button>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: AI ASSISTANT ==================== -->
+        <section class="view-section" id="view-assistant">
+          <div class="view-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2><span>✨</span> AI Study Suggestions</h2>
+              <p>Based on what you've studied, here are some topics for you!</p>
+            </div>
+
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <circle cx="80" cy="22" r="10" fill="#FDE047"/>
+              <path d="M78 32H82" stroke="#EAB308" stroke-width="2"/>
+              <rect x="25" y="35" width="45" height="34" rx="10" fill="#E2E8F0" stroke="#3B82F6" stroke-width="2.5"/>
+              <rect x="32" y="42" width="31" height="18" rx="6" fill="#1E234D"/>
+              <circle cx="40" cy="51" r="3" fill="#38BDF8"/>
+              <circle cx="55" cy="51" r="3" fill="#38BDF8"/>
+              <rect x="30" y="70" width="35" height="26" rx="8" fill="#E2E8F0" stroke="#3B82F6" stroke-width="2.5"/>
+            </svg>
+          </div>
+
+          <div class="card ai-view-card">
+            <h3 class="recommended-box-title">Recommended Topics:</h3>
+
+            <div class="topic-recommendation-list" id="topic-recommendation-list">
+              <!-- Populated dynamically based on user logs -->
+            </div>
+
+            <div class="ai-actions-row">
+              <button class="btn-save-topics" id="btn-save-topics">🔖 Save These Topics</button>
+              <button class="btn-try-again" id="btn-try-again">Try Again</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 4: MY STUDY ==================== -->
+        <section class="view-section" id="view-study">
+          <div class="view-header">
+            <h2><span>📖</span> My Study Sessions</h2>
+            <p>Your history of completed topics and study milestones.</p>
+          </div>
+
+          <div class="card table-card">
+            <table class="study-table">
+              <thead>
+                <tr>
+                  <th>Topic</th>
+                  <th>Subject</th>
+                  <th>Duration</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="study-logs-table-body">
+                <!-- Populated dynamically from real user entries -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: PROFILE ==================== -->
+        <section class="view-section" id="view-profile">
+          <div class="view-header">
+            <h2><span>👤</span> Student Profile</h2>
+            <p>Manage your account and view study achievements.</p>
+          </div>
+
+          <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 36px 24px;">
+            <img id="profile-avatar-img" src="https://lh3.googleusercontent.com/a/default-user=s96-c" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #5450D6; margin-bottom: 14px;">
+            <h3 style="font-size: 22px; font-weight: 800;" id="profile-name">Student</h3>
+            <p style="color: #64748B; margin-top: 4px;" id="profile-email">student@studybuddy.ai</p>
+            
+            <div style="margin: 24px 0; padding: 18px; background: #F8FAFD; border-radius: 16px; display: flex; justify-content: space-around;">
+              <div>
+                <span style="font-size: 20px; font-weight: 800; color: #5450D6;" id="profile-streak">0</span>
+                <div style="font-size: 12px; color: #64748B; font-weight: 600;">Day Streak</div>
+              </div>
+              <div>
+                <span style="font-size: 20px; font-weight: 800; color: #10B981;" id="profile-topics">0</span>
+                <div style="font-size: 12px; color: #64748B; font-weight: 600;">Topics Logged</div>
+              </div>
+              <div>
+                <span style="font-size: 20px; font-weight: 800; color: #F59E0B;" id="profile-rate">0%</span>
+                <div style="font-size: 12px; color: #64748B; font-weight: 600;">Goal Rate</div>
+              </div>
+            </div>
+
+            <a href="/oauth2/authorization/google" class="google-auth-btn" style="margin-top: 10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+              <span>Sign in with Google</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ROLLING HILLS FOOTER DECORATION -->
+      <footer class="page-footer-landscape">
+        <svg class="landscape-svg" viewBox="0 0 1440 160" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 80C260 30 520 120 780 70C1040 20 1280 80 1440 50V160H0V80Z" fill="#BBF7D0" opacity="0.6"/>
+          <path d="M0 110C340 70 680 130 1020 90C1240 60 1380 95 1440 90V160H0V110Z" fill="#86EFAC"/>
+          
+          <g transform="translate(1310, 85)">
+            <rect x="0" y="32" width="65" height="14" rx="3" fill="#3B82F6"/>
+            <rect x="6" y="16" width="55" height="13" rx="3" fill="#F59E0B"/>
+            <rect x="12" y="0" width="46" height="13" rx="3" fill="#EF4444"/>
+            <line x1="5" y1="39" x2="60" y2="39" stroke="#93C5FD" stroke-width="1.5"/>
+          </g>
+        </svg>
+
+        <div class="footer-quote-overlay">
+          <span>Dream Big, Study Smart!</span>
+          <span>💙</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/api.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

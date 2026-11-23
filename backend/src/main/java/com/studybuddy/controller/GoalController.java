@@ -5,8 +5,8 @@ import com.studybuddy.dto.GoalRequest;
 import com.studybuddy.dto.GoalResponse;
 import com.studybuddy.entity.Goal;
 import com.studybuddy.service.GoalService;
+import com.studybuddy.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,24 +16,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.server.ResponseStatusException;
-
 @RestController
 @RequestMapping("/api/v1/goals")
-@RequiredArgsConstructor
 public class GoalController {
 
     private final GoalService goalService;
+    private final UserService userService;
+
+    public GoalController(GoalService goalService, UserService userService) {
+        this.goalService = goalService;
+        this.userService = userService;
+    }
 
     private Long userId(OAuth2User principal) {
-        if (principal == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
-        }
-        Object id = principal.getAttribute("dbUserId");
-        if (id instanceof Number number) {
-            return number.longValue();
-        }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User ID not found in session");
+        return userService.getUserId(principal);
     }
 
     @PostMapping

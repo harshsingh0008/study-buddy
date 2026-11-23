@@ -55,4 +55,6 @@ env/
 
 # Environment & Secrets
 .env
+.env.*
+*.env
 .env.local

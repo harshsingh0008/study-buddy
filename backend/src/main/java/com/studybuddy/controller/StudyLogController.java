@@ -3,8 +3,8 @@ package com.studybuddy.controller;
 import com.studybuddy.dto.StudyLogRequest;
 import com.studybuddy.dto.StudyLogResponse;
 import com.studybuddy.service.StudyLogService;
+import com.studybuddy.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,24 +17,20 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-import org.springframework.web.server.ResponseStatusException;
-
 @RestController
 @RequestMapping("/api/v1/study-logs")
-@RequiredArgsConstructor
 public class StudyLogController {
 
     private final StudyLogService studyLogService;
+    private final UserService userService;
+
+    public StudyLogController(StudyLogService studyLogService, UserService userService) {
+        this.studyLogService = studyLogService;
+        this.userService = userService;
+    }
 
     private Long userId(OAuth2User principal) {
-        if (principal == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
-        }
-        Object id = principal.getAttribute("dbUserId");
-        if (id instanceof Number number) {
-            return number.longValue();
-        }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User ID not found in session");
+        return userService.getUserId(principal);
     }
 
     @PostMapping

@@ -45,6 +45,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         User user = syncUser(googleId, email, name, pictureUrl);
 
+        // Send welcome email upon successful authentication
+        emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+
         Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
         attributes.put("dbUserId", user.getId());
 
@@ -89,10 +92,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
                     User saved = userRepository.save(newUser);
                     log.info("New user registered via Google OAuth2: {} (ID: {})", email, saved.getId());
-
-                    // Send welcome email
-                    emailService.sendWelcomeEmail(saved.getEmail(), saved.getName());
-
                     return saved;
                 });
     }

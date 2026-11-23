@@ -1,6 +1,9 @@
 package com.studybuddy.config;
 
+import com.studybuddy.entity.User;
 import com.studybuddy.security.CustomOAuth2UserService;
+import com.studybuddy.service.EmailService;
+import com.studybuddy.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,12 +30,18 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final EmailService emailService;
+    private final UserService userService;
 
-    @Value("${app.frontend.url:http://localhost:5173}")
+    @Value("${app.frontend.url:/}")
     private String frontendUrl;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
+                          EmailService emailService,
+                          UserService userService) {
         this.customOAuth2UserService = customOAuth2UserService;
+        this.emailService = emailService;
+        this.userService = userService;
     }
 
     @Bean
@@ -41,6 +52,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
+                                "/index.html",
+                                "/css/**",
+                                "/js/**",
+                                "/assets/**",
+                                "/images/**",
+                                "/favicon.ico",
+                                "/api/v1/info",
                                 "/error",
                                 "/login/**",
                                 "/oauth2/**",
@@ -62,7 +80,17 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .defaultSuccessUrl(frontendUrl, false)
+                        .successHandler((request, response, authentication) -> {
+                            try {
+                                OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+                                User user = userService.getOrCreateUser(oauth2User);
+                                emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+                            } catch (Exception ignored) {
+                            }
+                            new HttpSessionRequestCache().removeRequest(request, response);
+                            String target = (frontendUrl != null && !frontendUrl.isBlank()) ? frontendUrl : "/";
+                            response.sendRedirect(target);
+                        })
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
@@ -82,7 +110,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "http://localhost:8081",
-                frontendUrl
+                "*"
         ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
