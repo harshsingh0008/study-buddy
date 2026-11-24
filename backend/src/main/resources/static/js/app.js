@@ -33,12 +33,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Inputs & Steppers
   const inputTodayStudy = document.getElementById('input-today-study');
+  const inputTodaySubject = document.getElementById('input-today-subject');
+  const inputTodayDuration = document.getElementById('input-today-duration');
+  const timeChips = document.querySelectorAll('.time-chip');
   const btnAddStudy = document.getElementById('btn-add-study');
 
   const stepperDaily = document.getElementById('stepper-daily');
   const stepperWeekly = document.getElementById('stepper-weekly');
   const stepperMonthly = document.getElementById('stepper-monthly');
   const btnSaveGoals = document.getElementById('btn-save-goals');
+
+  // Specific Goals elements
+  const inputGoalDesc = document.getElementById('input-goal-desc');
+  const selectGoalType = document.getElementById('select-goal-type');
+  const inputGoalDate = document.getElementById('input-goal-date');
+  const btnAddSpecificGoal = document.getElementById('btn-add-specific-goal');
+  const specificGoalsList = document.getElementById('specific-goals-list');
+  const specificGoalsCount = document.getElementById('specific-goals-count');
+  const goalFilterBtns = document.querySelectorAll('.goal-filter-btn');
+
+  // Modal elements
+  const modalEditGoal = document.getElementById('modal-edit-goal');
+  const editGoalId = document.getElementById('edit-goal-id');
+  const editGoalDesc = document.getElementById('edit-goal-desc');
+  const editGoalType = document.getElementById('edit-goal-type');
+  const editGoalDate = document.getElementById('edit-goal-date');
+  const btnCloseEditModal = document.getElementById('btn-close-edit-modal');
+  const btnCancelEditGoal = document.getElementById('btn-cancel-edit-goal');
+  const btnSaveEditGoal = document.getElementById('btn-save-edit-goal');
+
+  // Initialize Today's Date
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (inputGoalDate) inputGoalDate.value = todayStr;
+  if (editGoalDate) editGoalDate.value = todayStr;
+
+  // Time preset chips click handlers
+  timeChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      timeChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const timeVal = chip.getAttribute('data-time');
+      if (inputTodayDuration) {
+        inputTodayDuration.value = timeVal;
+      }
+    });
+  });
 
   // AI Assistant elements
   const btnGetSuggestionsHome = document.getElementById('btn-get-suggestions-home');
@@ -201,6 +240,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Study Logs Table
     renderStudyLogsTable();
 
+    // Specific Goals
+    renderSpecificGoals();
+
     // AI Suggestions
     const recommendations = await API.getAiRecommendations();
     renderAiTopics(recommendations);
@@ -248,14 +290,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      const subject = inputTodaySubject ? inputTodaySubject.value : "General";
+      const duration = inputTodayDuration ? (parseInt(inputTodayDuration.value) || 45) : 45;
+
       btnAddStudy.disabled = true;
       btnAddStudy.textContent = "Saving...";
 
-      await API.addStudyLog(topic, 45, "Study");
+      await API.addStudyLog(topic, duration, subject);
       inputTodayStudy.value = '';
       await refreshUI();
 
-      showToast(`Logged "${topic}" to your study tracker! 🎉`, "success");
+      showToast(`Logged "${topic}" (${duration} mins) to your study tracker! 🎉`, "success");
       btnAddStudy.disabled = false;
       btnAddStudy.textContent = "Add Study";
     });
@@ -297,6 +342,150 @@ document.addEventListener('DOMContentLoaded', async () => {
     `).join('');
   }
 
+  // Topic Info Modal elements
+  const modalTopicInfo = document.getElementById('modal-topic-info');
+  const topicInfoTitle = document.getElementById('topic-info-title');
+  const topicInfoModelBadge = document.getElementById('topic-info-model-badge');
+  const topicInfoContent = document.getElementById('topic-info-content');
+  const btnCloseTopicModal = document.getElementById('btn-close-topic-modal');
+  const btnCloseTopicNotes = document.getElementById('btn-close-topic-notes');
+  const btnTopicAddStudy = document.getElementById('btn-topic-add-study');
+  const btnTopicAddGoal = document.getElementById('btn-topic-add-goal');
+
+  let currentTopicInModal = "";
+
+  function closeTopicInfoModal() {
+    if (modalTopicInfo) modalTopicInfo.classList.add('hidden');
+  }
+
+  if (btnCloseTopicModal) btnCloseTopicModal.addEventListener('click', closeTopicInfoModal);
+  if (btnCloseTopicNotes) btnCloseTopicNotes.addEventListener('click', closeTopicInfoModal);
+
+  if (btnTopicAddStudy) {
+    btnTopicAddStudy.addEventListener('click', () => {
+      if (currentTopicInModal && inputTodayStudy) {
+        inputTodayStudy.value = currentTopicInModal;
+        closeTopicInfoModal();
+        switchTab('home');
+        showToast(`Selected "${currentTopicInModal}"! Click "Add Study" to log it.`, "info");
+      }
+    });
+  }
+
+  if (btnTopicAddGoal) {
+    btnTopicAddGoal.addEventListener('click', async () => {
+      if (currentTopicInModal) {
+        await API.addSpecificGoal(`Master ${currentTopicInModal}`, 'DAILY');
+        closeTopicInfoModal();
+        renderSpecificGoals();
+        switchTab('goals');
+        showToast(`Added "${currentTopicInModal}" to your study goals! 🎯`, "success");
+      }
+    });
+  }
+
+  async function openTopicInfoModal(topic) {
+    if (!modalTopicInfo) return;
+    currentTopicInModal = topic;
+    topicInfoTitle.textContent = topic;
+    topicInfoContent.innerHTML = '';
+    modalTopicInfo.classList.remove('hidden');
+
+    const subject = inputTodaySubject ? inputTodaySubject.value : "General";
+    const data = await API.getTopicInfo(topic, subject);
+
+    if (data.model && data.model.includes('gemini')) {
+      topicInfoModelBadge.textContent = "✨ Powered by Google Gemini AI";
+      topicInfoModelBadge.style.background = "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)";
+    } else {
+      topicInfoModelBadge.textContent = "📖 StudyBuddy Educational Notes";
+      topicInfoModelBadge.style.background = "linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%)";
+    }
+
+    topicInfoContent.innerHTML = formatMarkdownToHtml(data.content || "");
+  }
+
+  function formatMarkdownToHtml(md) {
+    if (!md) return '';
+
+    let html = md
+      // Escape script tags
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Code spans
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Process blocks / lines
+    const lines = html.split('\n');
+    let out = [];
+    let inUl = false;
+    let inOl = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+
+      // Heading 3 / 4
+      if (line.startsWith('### ')) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        out.push(`<h4>${line.substring(4)}</h4>`);
+        continue;
+      }
+      if (line.startsWith('## ')) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        out.push(`<h3>${line.substring(3)}</h3>`);
+        continue;
+      }
+
+      // Blockquotes / Tips
+      if (line.startsWith('> ')) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        out.push(`<div class="study-tip-callout">${line.substring(2)}</div>`);
+        continue;
+      }
+
+      // Numbered list item: 1. Item
+      const numMatch = line.match(/^([0-9]+)\.\s+(.*)/);
+      if (numMatch) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (!inOl) { out.push('<ol>'); inOl = true; }
+        out.push(`<li>${numMatch[2]}</li>`);
+        continue;
+      }
+
+      // Bullet item: - or *
+      const bulletMatch = line.match(/^[-*•]\s+(.*)/);
+      if (bulletMatch) {
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        if (!inUl) { out.push('<ul>'); inUl = true; }
+        out.push(`<li>${bulletMatch[1]}</li>`);
+        continue;
+      }
+
+      // Normal text line
+      if (line === '') {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+      } else {
+        if (!inUl && !inOl) {
+          out.push(`<p>${line}</p>`);
+        } else {
+          out.push(`<span>${line}</span>`);
+        }
+      }
+    }
+
+    if (inUl) out.push('</ul>');
+    if (inOl) out.push('</ol>');
+
+    return out.join('');
+  }
+
   // Render AI Topics
   function renderAiTopics(topics) {
     if (!topicListContainer) return;
@@ -314,13 +503,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     topicListContainer.innerHTML = topics.map((t, index) => `
       <div class="topic-item">
         <div class="topic-num-badge">${index + 1}</div>
-        <div class="topic-name">${t}</div>
-        <button class="stepper-btn add-topic-btn" title="Add as today's study topic" data-topic="${t}">+</button>
+        <div class="topic-name-wrap" title="Click to view full study notes & key concepts" data-topic="${t}">
+          <div class="topic-name">${t}</div>
+          <span class="topic-learn-hint">Click to learn & view key concepts 📖</span>
+        </div>
+        <div class="topic-actions-group">
+          <button class="learn-topic-btn" title="Learn key concepts" data-topic="${t}">📖 Learn</button>
+          <button class="stepper-btn add-topic-btn" title="Add as today's study topic" data-topic="${t}">+</button>
+        </div>
       </div>
     `).join('');
 
+    // Open Study Notes Modal when clicking topic name or Learn button
+    topicListContainer.querySelectorAll('.topic-name-wrap, .learn-topic-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        const topic = el.getAttribute('data-topic');
+        openTopicInfoModal(topic);
+      });
+    });
+
+    // Add directly to Today's Study
     topicListContainer.querySelectorAll('.add-topic-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const topic = btn.getAttribute('data-topic');
         inputTodayStudy.value = topic;
         switchTab('home');
@@ -332,9 +537,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnTryAgain) {
     btnTryAgain.addEventListener('click', async () => {
       btnTryAgain.textContent = "Generating...";
-      const newTopics = await API.getAiRecommendations();
+      btnTryAgain.disabled = true;
+      const newTopics = await API.getAiRecommendations(true);
       renderAiTopics(newTopics);
       btnTryAgain.textContent = "Try Again";
+      btnTryAgain.disabled = false;
       showToast("Fresh AI recommendations loaded! ✨", "info");
     });
   }
@@ -343,6 +550,201 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnSaveTopics.addEventListener('click', async () => {
       showToast("Topics bookmarked to your study plan! 🔖", "success");
     });
+  }
+
+  // ========================================================
+  // SPECIFIC STUDY GOALS CONTROLLER
+  // ========================================================
+  let currentGoalFilter = 'all';
+
+  if (goalFilterBtns) {
+    goalFilterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        goalFilterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentGoalFilter = btn.getAttribute('data-filter');
+        renderSpecificGoals();
+      });
+    });
+  }
+
+  function renderSpecificGoals() {
+    if (!specificGoalsList) return;
+    const goals = API.state.customGoals || [];
+
+    // Counter badge
+    if (specificGoalsCount) {
+      const activeCount = goals.filter(g => !g.isCompleted).length;
+      specificGoalsCount.textContent = `${activeCount} Active / ${goals.length} Total`;
+    }
+
+    let filtered = goals;
+    if (currentGoalFilter === 'DAILY') {
+      filtered = goals.filter(g => g.goalType === 'DAILY');
+    } else if (currentGoalFilter === 'WEEKLY') {
+      filtered = goals.filter(g => g.goalType === 'WEEKLY');
+    } else if (currentGoalFilter === 'MONTHLY') {
+      filtered = goals.filter(g => g.goalType === 'MONTHLY');
+    } else if (currentGoalFilter === 'pending') {
+      filtered = goals.filter(g => !g.isCompleted);
+    } else if (currentGoalFilter === 'completed') {
+      filtered = goals.filter(g => g.isCompleted);
+    }
+
+    if (filtered.length === 0) {
+      specificGoalsList.innerHTML = `
+        <div class="empty-state-box" style="padding: 24px;">
+          <div class="empty-state-icon">🎯</div>
+          <div class="empty-state-title">No goals found</div>
+          <div class="empty-state-desc">Add a specific study target above to keep yourself accountable!</div>
+        </div>
+      `;
+      return;
+    }
+
+    specificGoalsList.innerHTML = filtered.map(g => `
+      <div class="specific-goal-item ${g.isCompleted ? 'completed' : ''}" data-id="${g.id}">
+        <div class="goal-item-left">
+          <button class="goal-check-btn ${g.isCompleted ? 'checked' : ''}" title="${g.isCompleted ? 'Mark Pending' : 'Mark Completed'}" data-id="${g.id}">
+            ${g.isCompleted ? '✓' : ''}
+          </button>
+          <div class="goal-item-content">
+            <span class="goal-desc-text">${escapeHtml(g.description)}</span>
+            <div class="goal-item-meta">
+              <span class="goal-type-chip ${g.goalType}">${g.goalType}</span>
+              <span>🕒 Due: ${g.targetDate || 'Today'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="goal-item-actions">
+          <button class="btn-icon-action btn-edit-goal" title="Edit Goal" data-id="${g.id}">✏️</button>
+          <button class="btn-icon-action delete btn-delete-goal" title="Delete Goal" data-id="${g.id}">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Toggle complete
+    specificGoalsList.querySelectorAll('.goal-check-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        const goal = goals.find(g => g.id == id);
+        if (goal) {
+          const newStatus = !goal.isCompleted;
+          await API.toggleGoalCompletion(id, newStatus);
+          renderSpecificGoals();
+          showToast(newStatus ? "Goal completed! 🎉" : "Goal marked as pending", "info");
+        }
+      });
+    });
+
+    // Edit button
+    specificGoalsList.querySelectorAll('.btn-edit-goal').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const goal = goals.find(g => g.id == id);
+        if (goal) {
+          openEditGoalModal(goal);
+        }
+      });
+    });
+
+    // Delete button
+    specificGoalsList.querySelectorAll('.btn-delete-goal').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        await API.deleteSpecificGoal(id);
+        renderSpecificGoals();
+        showToast("Goal removed", "info");
+      });
+    });
+  }
+
+  // Add specific goal action
+  if (btnAddSpecificGoal) {
+    btnAddSpecificGoal.addEventListener('click', async () => {
+      const desc = inputGoalDesc.value.trim();
+      const type = selectGoalType.value;
+      const date = inputGoalDate.value || todayStr;
+
+      if (!desc) {
+        showToast("Please enter a goal description!", "info");
+        inputGoalDesc.focus();
+        return;
+      }
+
+      btnAddSpecificGoal.disabled = true;
+      btnAddSpecificGoal.textContent = "Adding...";
+
+      await API.addSpecificGoal(desc, type, date);
+      inputGoalDesc.value = '';
+      btnAddSpecificGoal.disabled = false;
+      btnAddSpecificGoal.textContent = "+ Add Specific Goal";
+
+      renderSpecificGoals();
+      showToast("Goal added successfully! 🎯", "success");
+    });
+
+    if (inputGoalDesc) {
+      inputGoalDesc.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          btnAddSpecificGoal.click();
+        }
+      });
+    }
+  }
+
+  // Edit Goal Modal handlers
+  function openEditGoalModal(goal) {
+    if (!modalEditGoal) return;
+    editGoalId.value = goal.id;
+    editGoalDesc.value = goal.description;
+    editGoalType.value = goal.goalType || "DAILY";
+    editGoalDate.value = goal.targetDate || todayStr;
+    modalEditGoal.classList.remove('hidden');
+    editGoalDesc.focus();
+  }
+
+  function closeEditGoalModal() {
+    if (modalEditGoal) modalEditGoal.classList.add('hidden');
+  }
+
+  if (btnCloseEditModal) btnCloseEditModal.addEventListener('click', closeEditGoalModal);
+  if (btnCancelEditGoal) btnCancelEditGoal.addEventListener('click', closeEditGoalModal);
+
+  if (btnSaveEditGoal) {
+    btnSaveEditGoal.addEventListener('click', async () => {
+      const id = editGoalId.value;
+      const desc = editGoalDesc.value.trim();
+      const type = editGoalType.value;
+      const date = editGoalDate.value || todayStr;
+
+      if (!desc) {
+        showToast("Goal description cannot be empty!", "info");
+        editGoalDesc.focus();
+        return;
+      }
+
+      btnSaveEditGoal.disabled = true;
+      btnSaveEditGoal.textContent = "Saving...";
+
+      await API.updateSpecificGoal(id, desc, type, date);
+      closeEditGoalModal();
+      btnSaveEditGoal.disabled = false;
+      btnSaveEditGoal.textContent = "Save Changes";
+
+      renderSpecificGoals();
+      showToast("Goal updated successfully! 🎯", "success");
+    });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   // Logout

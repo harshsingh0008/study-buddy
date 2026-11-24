@@ -277,11 +277,40 @@
 
                 <div class="input-group">
                   <label class="input-label" for="input-today-study">What did you study today?</label>
-                  <input type="text" id="input-today-study" class="styled-input" placeholder="e.g. Fractions" autocomplete="off">
+                  <input type="text" id="input-today-study" class="styled-input" placeholder="e.g. Fractions & Algebra" autocomplete="off">
+                </div>
+
+                <div class="study-details-grid" style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 10px; margin-top: 10px;">
+                  <div class="input-group" style="margin-top: 0;">
+                    <label class="input-label" for="input-today-subject">Subject</label>
+                    <select id="input-today-subject" class="styled-input styled-select">
+                      <option value="Mathematics">📐 Mathematics</option>
+                      <option value="Science">🔬 Science</option>
+                      <option value="Computer Science">💻 Computer Science</option>
+                      <option value="History">🏛️ History</option>
+                      <option value="Languages">📚 Languages</option>
+                      <option value="General" selected>📖 General</option>
+                    </select>
+                  </div>
+
+                  <div class="input-group" style="margin-top: 0;">
+                    <label class="input-label" for="input-today-duration">Time Spent (mins)</label>
+                    <input type="number" id="input-today-duration" class="styled-input" min="5" max="600" value="45" placeholder="45">
+                  </div>
+                </div>
+
+                <!-- Quick time chips -->
+                <div class="time-presets-row" style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                  <span class="time-chip" data-time="15">15m</span>
+                  <span class="time-chip" data-time="30">30m</span>
+                  <span class="time-chip active" data-time="45">45m</span>
+                  <span class="time-chip" data-time="60">1h</span>
+                  <span class="time-chip" data-time="90">1.5h</span>
+                  <span class="time-chip" data-time="120">2h</span>
                 </div>
               </div>
 
-              <button class="btn-primary" id="btn-add-study">Add Study</button>
+              <button class="btn-primary" id="btn-add-study" style="margin-top: 14px;">Add Study</button>
             </div>
           </div>
 
@@ -418,9 +447,124 @@
               </div>
             </div>
 
-            <button class="btn-primary btn-center-submit" id="btn-save-goals">Save Goals</button>
+            <button class="btn-primary btn-center-submit" id="btn-save-goals">Save Target Goals</button>
+          </div>
+
+          <!-- SPECIFIC GOALS CARD -->
+          <div class="card goals-form-card" style="margin-top: 24px;">
+            <div class="card-title-row" style="margin-bottom: 16px;">
+              <div class="card-title">
+                <span style="font-size: 20px;">📝</span>
+                <span>Specific Study Goals</span>
+              </div>
+              <span class="goals-counter-badge" id="specific-goals-count">0 Goals</span>
+            </div>
+
+            <!-- Create / Add Specific Goal Form -->
+            <div class="add-goal-form-box">
+              <div class="add-goal-inputs-grid">
+                <div class="input-group" style="flex: 2; margin-top: 0;">
+                  <label class="input-label" for="input-goal-desc">Goal Description</label>
+                  <input type="text" id="input-goal-desc" class="styled-input" placeholder="e.g. Solve 5 Calculus derivative problems" autocomplete="off">
+                </div>
+
+                <div class="input-group" style="flex: 1; margin-top: 0;">
+                  <label class="input-label" for="select-goal-type">Goal Type</label>
+                  <select id="select-goal-type" class="styled-input styled-select">
+                    <option value="DAILY">📅 Daily Goal</option>
+                    <option value="WEEKLY">🗓️ Weekly Goal</option>
+                    <option value="MONTHLY">⭐ Monthly Goal</option>
+                  </select>
+                </div>
+
+                <div class="input-group" style="flex: 1; margin-top: 0;">
+                  <label class="input-label" for="input-goal-date">Target Date</label>
+                  <input type="date" id="input-goal-date" class="styled-input">
+                </div>
+              </div>
+
+              <button class="btn-primary" id="btn-add-specific-goal" style="margin-top: 14px; width: 100%;">+ Add Specific Goal</button>
+            </div>
+
+            <!-- Filter tabs for specific goals -->
+            <div class="goal-filters-bar">
+              <button class="goal-filter-btn active" data-filter="all">All</button>
+              <button class="goal-filter-btn" data-filter="DAILY">Daily</button>
+              <button class="goal-filter-btn" data-filter="WEEKLY">Weekly</button>
+              <button class="goal-filter-btn" data-filter="MONTHLY">Monthly</button>
+              <button class="goal-filter-btn" data-filter="pending">Pending</button>
+              <button class="goal-filter-btn" data-filter="completed">Completed</button>
+            </div>
+
+            <!-- List of specific goals -->
+            <div class="specific-goals-list" id="specific-goals-list">
+              <!-- Dynamically populated -->
+            </div>
           </div>
         </section>
+
+        <!-- EDIT GOAL MODAL -->
+        <div class="modal-overlay hidden" id="modal-edit-goal">
+          <div class="modal-box">
+            <div class="modal-header">
+              <h3>✏️ Edit Study Goal</h3>
+              <button class="modal-close-btn" id="btn-close-edit-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="edit-goal-id">
+              <div class="input-group">
+                <label class="input-label" for="edit-goal-desc">Goal Description</label>
+                <input type="text" id="edit-goal-desc" class="styled-input">
+              </div>
+              <div class="input-group" style="margin-top: 12px;">
+                <label class="input-label" for="edit-goal-type">Goal Type</label>
+                <select id="edit-goal-type" class="styled-input styled-select">
+                  <option value="DAILY">📅 Daily Goal</option>
+                  <option value="WEEKLY">🗓️ Weekly Goal</option>
+                  <option value="MONTHLY">⭐ Monthly Goal</option>
+                </select>
+              </div>
+              <div class="input-group" style="margin-top: 12px;">
+                <label class="input-label" for="edit-goal-date">Target Date</label>
+                <input type="date" id="edit-goal-date" class="styled-input">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel" id="btn-cancel-edit-goal">Cancel</button>
+              <button class="btn-primary" id="btn-save-edit-goal">Save Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOPIC INFO / STUDY NOTES MODAL -->
+        <div class="modal-overlay hidden" id="modal-topic-info">
+          <div class="modal-box modal-lg">
+            <div class="modal-header">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">📖</span>
+                <div>
+                  <h3 id="topic-info-title" style="font-size: 19px; font-weight: 800;">Topic Study Notes</h3>
+                  <span class="ai-powered-pill" id="topic-info-model-badge">✨ Powered by Google Gemini AI</span>
+                </div>
+              </div>
+              <button class="modal-close-btn" id="btn-close-topic-modal">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="max-height: 62vh; overflow-y: auto; padding: 18px 22px;">
+              <div id="topic-info-content" class="topic-notes-rendered markdown-content">
+                <!-- Rendered markdown / HTML content directly -->
+              </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <button class="btn-cancel" id="btn-close-topic-notes">Close</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary-action" id="btn-topic-add-goal">🎯 Add as Goal</button>
+                <button class="btn-primary" id="btn-topic-add-study">➕ Add to Today's Study</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- ==================== VIEW 3: AI ASSISTANT ==================== -->
         <section class="view-section" id="view-assistant">

@@ -45,13 +45,13 @@ public class StudyLogService {
 
         AiSuggestionService.AiResult result = aiSuggestionService.suggest(req.getContent(), req.getSubject());
 
-        if (result.success()) {
+        if (result.suggestions() != null && !result.suggestions().isEmpty()) {
             try {
                 log.setAiSuggestions(objectMapper.writeValueAsString(result.suggestions()));
             } catch (Exception e) {
                 log.setAiSuggestions("[]");
             }
-            log.setAiStatus("SUCCESS");
+            log.setAiStatus(result.success() ? "SUCCESS" : "FALLBACK");
         } else {
             log.setAiStatus("UNAVAILABLE");
         }
@@ -96,13 +96,13 @@ public class StudyLogService {
 
         AiSuggestionService.AiResult result = aiSuggestionService.suggest(log.getContent(), log.getSubject());
 
-        if (result.success()) {
+        if (result.suggestions() != null && !result.suggestions().isEmpty()) {
             try {
                 log.setAiSuggestions(objectMapper.writeValueAsString(result.suggestions()));
             } catch (Exception e) {
                 log.setAiSuggestions("[]");
             }
-            log.setAiStatus("SUCCESS");
+            log.setAiStatus(result.success() ? "SUCCESS" : "FALLBACK");
         } else {
             log.setAiStatus("UNAVAILABLE");
         }

@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "google_id", unique = true, nullable = false)
+    @Column(name = "google_id", unique = true)
     private String googleId;
 
     @Column(nullable = false, unique = true)
@@ -28,6 +28,13 @@ public class User {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "role")
+    @Builder.Default
+    private String role = "ROLE_USER";
 
     @Column(name = "picture_url", length = 1000)
     private String pictureUrl;
@@ -37,6 +44,11 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.role == null) {
+            this.role = "ROLE_USER";
+        }
     }
 }
