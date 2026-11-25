@@ -56,5 +56,6 @@ env/
 # Environment & Secrets
 .env
 .env.*
+!.env.example
 *.env
 .env.local
