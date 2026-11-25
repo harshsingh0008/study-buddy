@@ -58,7 +58,19 @@
       </a>
 
       <div class="login-divider">
-        <span>or enter as guest</span>
+        <span>or use email and password</span>
+      </div>
+
+      <form class="guest-login-form" id="credentials-form">
+        <input type="text" id="auth-name-input" class="login-input hidden" placeholder="Your name" autocomplete="name">
+        <input type="email" id="auth-email-input" class="login-input" placeholder="Email address" autocomplete="email" required>
+        <input type="password" id="auth-password-input" class="login-input" placeholder="Password" autocomplete="current-password" minlength="6" required>
+        <button type="submit" class="btn-guest-submit" id="credentials-submit">Sign in</button>
+        <button type="button" class="auth-mode-toggle" id="auth-mode-toggle">Create an account</button>
+      </form>
+
+      <div class="login-divider">
+        <span>or continue as guest</span>
       </div>
 
       <!-- Quick Name Input for Immediate User Entry -->

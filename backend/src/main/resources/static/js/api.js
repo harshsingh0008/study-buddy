@@ -23,12 +23,16 @@ const API = {
   },
 
   /**
-   * Check if user is logged in via Google OAuth2 or guest session
+   * Check if user is logged in via JWT, Google OAuth2, or guest session
    */
   async checkAuth() {
-    // 1. Try real backend OAuth2 session
+    // Try the backend first, using a bearer token when one is available.
     try {
-      const res = await fetch(`${this.baseUrl}/api/v1/auth/me`, { credentials: 'include' });
+      let res = await this.request(`${this.baseUrl}/api/v1/auth/me`);
+      if (res.status === 401 && sessionStorage.getItem('sb_token')) {
+        sessionStorage.removeItem('sb_token');
+        res = await this.request(`${this.baseUrl}/api/v1/auth/me`);
+      }
       if (res.ok) {
         const userData = await res.json();
         this.user = { ...userData, isAuthenticated: true, isGuest: false };
@@ -49,6 +53,46 @@ const API = {
 
     this.user = null;
     return null;
+  },
+
+  async request(url, options = {}) {
+    const headers = new Headers(options.headers || {});
+    const token = sessionStorage.getItem('sb_token');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return fetch(url, {
+      ...options,
+      headers,
+      credentials: options.credentials || 'include'
+    });
+  },
+
+  async authenticate(endpoint, credentials) {
+    const res = await this.request(`${this.baseUrl}/api/v1/auth/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || 'Unable to authenticate. Please try again.');
+    }
+    if (!data.token || !data.user) {
+      throw new Error('The server returned an invalid authentication response.');
+    }
+
+    sessionStorage.setItem('sb_token', data.token);
+    this.user = { ...data.user, isAuthenticated: true, isGuest: false };
+    return this.user;
+  },
+
+  login(email, password) {
+    return this.authenticate('login', { email, password });
+  },
+
+  register(name, email, password) {
+    return this.authenticate('register', { name, email, password });
   },
 
   /**
@@ -74,11 +118,12 @@ const API = {
    */
   async logout() {
     try {
-      await fetch(`${this.baseUrl}/api/v1/auth/logout`, {
+      await this.request(`${this.baseUrl}/api/v1/auth/logout`, {
         method: 'POST',
         credentials: 'include'
       });
     } catch (e) {}
+    sessionStorage.removeItem('sb_token');
     localStorage.removeItem('sb_user');
     this.user = null;
     window.location.reload();
@@ -92,9 +137,9 @@ const API = {
     if (this.user && !this.user.isGuest) {
       try {
         const [statsRes, logsRes, goalsRes] = await Promise.all([
-          fetch(`${this.baseUrl}/api/v1/dashboard/stats`, { credentials: 'include' }),
-          fetch(`${this.baseUrl}/api/v1/study-logs?size=50`, { credentials: 'include' }),
-          fetch(`${this.baseUrl}/api/v1/goals?size=100`, { credentials: 'include' })
+          this.request(`${this.baseUrl}/api/v1/dashboard/stats`),
+          this.request(`${this.baseUrl}/api/v1/study-logs?size=50`),
+          this.request(`${this.baseUrl}/api/v1/goals?size=100`)
         ]);
 
         if (statsRes.ok) {
@@ -170,7 +215,7 @@ const API = {
     // Try backend
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/study-logs`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/study-logs`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -228,7 +273,7 @@ const API = {
     if (this.user && !this.user.isGuest) {
       try {
         if (daily > 0) {
-          await fetch(`${this.baseUrl}/api/v1/goals`, {
+          await this.request(`${this.baseUrl}/api/v1/goals`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -236,7 +281,7 @@ const API = {
           });
         }
         if (weekly > 0) {
-          await fetch(`${this.baseUrl}/api/v1/goals`, {
+          await this.request(`${this.baseUrl}/api/v1/goals`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -244,7 +289,7 @@ const API = {
           });
         }
         if (monthly > 0) {
-          await fetch(`${this.baseUrl}/api/v1/goals`, {
+          await this.request(`${this.baseUrl}/api/v1/goals`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -268,7 +313,7 @@ const API = {
 
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/goals`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/goals`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -311,7 +356,7 @@ const API = {
 
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/goals/${id}`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/goals/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -352,7 +397,7 @@ const API = {
   async toggleGoalCompletion(id, isCompleted) {
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/goals/${id}/complete`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/goals/${id}/complete`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -385,7 +430,7 @@ const API = {
   async deleteSpecificGoal(id) {
     if (this.user && !this.user.isGuest) {
       try {
-        await fetch(`${this.baseUrl}/api/v1/goals/${id}`, {
+        await this.request(`${this.baseUrl}/api/v1/goals/${id}`, {
           method: 'DELETE',
           credentials: 'include'
         });
@@ -492,7 +537,7 @@ const API = {
     // 2. Call backend Gemini AI endpoint
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/ai/suggest`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/ai/suggest`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -561,7 +606,7 @@ const API = {
   async getTopicInfo(topic, subject = "General") {
     if (this.user && !this.user.isGuest) {
       try {
-        const res = await fetch(`${this.baseUrl}/api/v1/ai/topic-info`, {
+        const res = await this.request(`${this.baseUrl}/api/v1/ai/topic-info`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

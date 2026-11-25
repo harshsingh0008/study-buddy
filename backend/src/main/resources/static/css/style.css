@@ -221,6 +221,20 @@ body {
   transform: translateY(-1px);
 }
 
+.auth-mode-toggle {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-mode-toggle:hover {
+  text-decoration: underline;
+}
+
 .login-footer-quote {
   margin-top: 24px;
   font-size: 13px;

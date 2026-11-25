@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Login elements
   const guestNameInput = document.getElementById('guest-name-input');
   const btnGuestLogin = document.getElementById('btn-guest-login');
+  const credentialsForm = document.getElementById('credentials-form');
+  const authNameInput = document.getElementById('auth-name-input');
+  const authEmailInput = document.getElementById('auth-email-input');
+  const authPasswordInput = document.getElementById('auth-password-input');
+  const credentialsSubmit = document.getElementById('credentials-submit');
+  const authModeToggle = document.getElementById('auth-mode-toggle');
+  let authMode = 'login';
 
   // Progress Displays
   const dailyProgressText = document.getElementById('daily-goal-text');
@@ -150,6 +157,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     guestNameInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         btnGuestLogin.click();
+      }
+    });
+  }
+
+  if (authModeToggle) {
+    authModeToggle.addEventListener('click', () => {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      const registering = authMode === 'register';
+      authNameInput.classList.toggle('hidden', !registering);
+      authNameInput.required = registering;
+      authPasswordInput.autocomplete = registering ? 'new-password' : 'current-password';
+      credentialsSubmit.textContent = registering ? 'Create account' : 'Sign in';
+      authModeToggle.textContent = registering ? 'Already have an account? Sign in' : 'Create an account';
+    });
+  }
+
+  if (credentialsForm) {
+    credentialsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const registering = authMode === 'register';
+      credentialsSubmit.disabled = true;
+      credentialsSubmit.textContent = registering ? 'Creating account...' : 'Signing in...';
+
+      try {
+        const user = registering
+          ? await API.register(authNameInput.value.trim(), authEmailInput.value.trim(), authPasswordInput.value)
+          : await API.login(authEmailInput.value.trim(), authPasswordInput.value);
+        authPasswordInput.value = '';
+        await API.loadUserData();
+        showApp(user);
+        showToast(`Welcome to StudyBuddy, ${user.name}! 🎓`, 'success');
+      } catch (error) {
+        showToast(error.message || 'Unable to authenticate. Please try again.', 'info');
+      } finally {
+        credentialsSubmit.disabled = false;
+        credentialsSubmit.textContent = authMode === 'register' ? 'Create account' : 'Sign in';
       }
     });
   }
